@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E95040452962826800D39DF7 /* Numerics in Frameworks */ = {isa = PBXBuildFile; productRef = E95040442962826800D39DF7 /* Numerics */; };
 		E9CE163A29623FD100A6F7DA /* CalculatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CE163929623FD100A6F7DA /* CalculatorApp.swift */; };
 		E9CE163C29623FD100A6F7DA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CE163B29623FD100A6F7DA /* ContentView.swift */; };
 		E9CE163E29623FD300A6F7DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9CE163D29623FD300A6F7DA /* Assets.xcassets */; };
@@ -14,6 +15,8 @@
 		E9CE164C29623FD300A6F7DA /* CalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CE164B29623FD300A6F7DA /* CalculatorTests.swift */; };
 		E9CE165629623FD300A6F7DA /* CalculatorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CE165529623FD300A6F7DA /* CalculatorUITests.swift */; };
 		E9CE165829623FD300A6F7DA /* CalculatorUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CE165729623FD300A6F7DA /* CalculatorUITestsLaunchTests.swift */; };
+		E9CE166629625FAF00A6F7DA /* Expression in Frameworks */ = {isa = PBXBuildFile; productRef = E9CE166529625FAF00A6F7DA /* Expression */; };
+		E9DDE29C2964062900BF378D /* ExpressionsLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DDE29B2964062900BF378D /* ExpressionsLib.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +48,7 @@
 		E9CE165129623FD300A6F7DA /* CalculatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalculatorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9CE165529623FD300A6F7DA /* CalculatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorUITests.swift; sourceTree = "<group>"; };
 		E9CE165729623FD300A6F7DA /* CalculatorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		E9DDE29B2964062900BF378D /* ExpressionsLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpressionsLib.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +56,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E95040452962826800D39DF7 /* Numerics in Frameworks */,
+				E9CE166629625FAF00A6F7DA /* Expression in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,6 +106,7 @@
 				E9CE163D29623FD300A6F7DA /* Assets.xcassets */,
 				E9CE163F29623FD300A6F7DA /* Calculator.entitlements */,
 				E9CE164029623FD300A6F7DA /* Preview Content */,
+				E9DDE29B2964062900BF378D /* ExpressionsLib.swift */,
 			);
 			path = Calculator;
 			sourceTree = "<group>";
@@ -145,6 +152,10 @@
 			dependencies = (
 			);
 			name = Calculator;
+			packageProductDependencies = (
+				E9CE166529625FAF00A6F7DA /* Expression */,
+				E95040442962826800D39DF7 /* Numerics */,
+			);
 			productName = Calculator;
 			productReference = E9CE163629623FD100A6F7DA /* Calculator.app */;
 			productType = "com.apple.product-type.application";
@@ -217,6 +228,10 @@
 				Base,
 			);
 			mainGroup = E9CE162D29623FD100A6F7DA;
+			packageReferences = (
+				E9CE166429625FAF00A6F7DA /* XCRemoteSwiftPackageReference "Expression" */,
+				E95040432962826800D39DF7 /* XCRemoteSwiftPackageReference "swift-numerics" */,
+			);
 			productRefGroup = E9CE163729623FD100A6F7DA /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -260,6 +275,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9CE163C29623FD100A6F7DA /* ContentView.swift in Sources */,
+				E9DDE29C2964062900BF378D /* ExpressionsLib.swift in Sources */,
 				E9CE163A29623FD100A6F7DA /* CalculatorApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -612,6 +628,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E95040432962826800D39DF7 /* XCRemoteSwiftPackageReference "swift-numerics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-numerics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		E9CE166429625FAF00A6F7DA /* XCRemoteSwiftPackageReference "Expression" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nicklockwood/Expression.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.13.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E95040442962826800D39DF7 /* Numerics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E95040432962826800D39DF7 /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = Numerics;
+		};
+		E9CE166529625FAF00A6F7DA /* Expression */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9CE166429625FAF00A6F7DA /* XCRemoteSwiftPackageReference "Expression" */;
+			productName = Expression;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E9CE162E29623FD100A6F7DA /* Project object */;
 }
