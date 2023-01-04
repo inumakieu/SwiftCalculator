@@ -8,6 +8,7 @@
 import SwiftUI
 import Expression
 import Numerics
+import CoreHaptics
 
 extension RangeReplaceableCollection {
     mutating func splice<R: RangeExpression>(range: R) -> SubSequence
@@ -32,6 +33,37 @@ struct MyButtonStyle: ButtonStyle {
     }
 }
 
+struct MyTextField: UIViewRepresentable {
+    @Binding var currentText: String
+    @Binding var placeHolder: String
+    
+    func makeUIView(context: Context) -> UITextField {
+        let textField = UITextField()
+        textField.inputView = UIView() // hiding keyboard
+        textField.inputAccessoryView = UIView() // hiding keyboard toolbar
+        textField.placeholder = placeHolder
+        textField.textColor = UIColor.black
+        textField.font = UIFont.systemFont(ofSize: 22.0)
+        textField.delegate = context.coordinator
+        return textField
+    }
+    
+    func updateUIView(_ textField: UITextField, context: Context) {
+        textField.text = currentText
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $currentText)
+    }
+    
+    class Coordinator: NSObject, UITextFieldDelegate {
+        @Binding var text: String
+        init(text: Binding<String>) {
+            self._text = text
+        }
+    }
+}
+
 struct TextButton: View {
     let text: String
     @Binding var equation: String
@@ -39,6 +71,39 @@ struct TextButton: View {
     @Binding var extraOptions: Bool
     @Binding var errored: Bool
     let color: String?
+    @State private var engine: CHHapticEngine?
+    
+    func complexSuccess() {
+        // make sure that the device supports haptics
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        var events = [CHHapticEvent]()
+
+        // create one intense, sharp tap
+        let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1)
+        let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 1)
+        let event = CHHapticEvent(eventType: .hapticTransient, parameters: [intensity, sharpness], relativeTime: 0)
+        events.append(event)
+
+        // convert those events into a pattern and play it immediately
+        do {
+            let pattern = try CHHapticPattern(events: events, parameters: [])
+            let player = try engine?.makePlayer(with: pattern)
+            try player?.start(atTime: 0)
+        } catch {
+            print("Failed to play pattern: \(error.localizedDescription).")
+        }
+    }
+
+    func prepareHaptics() {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+
+        do {
+            engine = try CHHapticEngine()
+            try engine?.start()
+        } catch {
+            print("There was an error creating the engine: \(error.localizedDescription)")
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -49,7 +114,9 @@ struct TextButton: View {
         .frame(width: 78,height: extraOptions ? 64 : 78)
         .cornerRadius(39)
         .animation(.spring(response: 0.3), value: extraOptions)
+        .onAppear(perform: prepareHaptics)
         .onTapGesture {
+            complexSuccess()
             if(text == "( )") {
                 if(equation.count == 0 || equation.last! == "(") {
                     equation = equation + "("
@@ -76,12 +143,49 @@ struct CustomButton: View {
     @Binding var extraOptions: Bool
     @Binding var errored: Bool
     let color: String?
+    @State private var engine: CHHapticEngine?
+    
+    func complexSuccess() {
+        // make sure that the device supports haptics
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        var events = [CHHapticEvent]()
+
+        // create one intense, sharp tap
+        let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1)
+        let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 1)
+        let event = CHHapticEvent(eventType: .hapticTransient, parameters: [intensity, sharpness], relativeTime: 0)
+        events.append(event)
+
+        // convert those events into a pattern and play it immediately
+        do {
+            let pattern = try CHHapticPattern(events: events, parameters: [])
+            let player = try engine?.makePlayer(with: pattern)
+            try player?.start(atTime: 0)
+        } catch {
+            print("Failed to play pattern: \(error.localizedDescription).")
+        }
+    }
+
+    func prepareHaptics() {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+
+        do {
+            engine = try CHHapticEngine()
+            try engine?.start()
+        } catch {
+            print("There was an error creating the engine: \(error.localizedDescription)")
+        }
+    }
     
     var body: some View {
         Button(action: {
+            complexSuccess()
             if(text == "=") {
                 do {
-                    let value = try ExpressionsLib().evaluateExpression(expo: equation.replacingOccurrences(of: "x", with: "*").replacingOccurrences(of: "÷", with: "/"))
+                    let eq = equation.replacingOccurrences(of: "×", with: "*").replacingOccurrences(of: "÷", with: "/").replacingOccurrences(of: "√", with: "sqrt").replacingOccurrences(of: "π", with: String(Double.pi)).replacingOccurrences(of: "e", with: String(Double.exp(1))).replacingOccurrences(of: "INV", with: "")
+                    
+                    print(eq)
+                    let value = try ExpressionsLib().evaluateExpression(expo: eq)
                     result = String(value)
                 } catch {
                     print(error)
@@ -102,6 +206,7 @@ struct CustomButton: View {
         }
         .buttonStyle(MyButtonStyle(extraOptions: $extraOptions, color: color))
         .cornerRadius(39)
+        .onAppear(perform: prepareHaptics)
     }
 }
 
@@ -174,7 +279,7 @@ struct ContentView: View {
                         Text("√")
                             .bold()
                             .onTapGesture {
-                                equation = equation + "√"
+                                equation = equation + "√("
                             }
                         
                         Spacer()

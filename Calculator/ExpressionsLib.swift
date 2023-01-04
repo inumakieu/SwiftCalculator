@@ -185,7 +185,7 @@ class ExpressionsLib {
     
     
     init() {
-        
+
         allOperators = [unaryOperators, postUnaryOperators, binaryOperations]
         mapOperatorToId = [
             "^": 0,
@@ -258,56 +258,73 @@ class ExpressionsLib {
      * @returns a single numerical stack element
      */
     func evaluateSubExpression(expo: [StackElement]) throws -> StackElement {
-        
+
         var exp = expo
         for j in 0...BEDMAS.count-1 {
             let op = BEDMAS[j];
             let operationID =  Int(mapOperatorToId[mapOperatorToId.index(forKey: op)!].value);
-            
-            
-            for  i in (0...exp.count - 1).reversed() {
-                if(exp[i].isOperator && (Int(exp[i].value) == operationID || exp[i].value == -1)) {
-                    
+
+            var i = 0;
+            while(i < exp.count){
+                if(exp[i].isOperator && (Int(exp[i].value) == operationID)) {
+
+
+                    if(exp[i + 1].value == -1 && exp[i + 1].isOperator){
+
+                        if(!isNum(elem: exp[i + 2]))
+                        {
+                            // TODO: add error handling here
+                            throw "Syntax Error"
+                        }
+
+                        exp[i + 2].value *= -1;
+                        exp[i + 1] =  exp[i + 2];
+                        exp.removeSubrange(i+2...i+2);
+                    }
+
                     // If the elements surrounding the operator are not
                     // numbers, then it means that there is
                     // a syntax error somewhere
-                    
-                    if(exp[i].value == -1){
-                        
-                        if(!isNum(elem: exp[i + 1]))
-                        {
-                            // TODO: add error handling here
-                            throw "Syntax Error"
-                        }
-                        
-                        exp[i + 1].value *= -1;
-                        exp[i] =  exp[i + 1];
-                        
-                        exp.removeSubrange(i+1...i+1);
-                    }else{
-                        if(!isNum(elem: exp[i - 1]) || !isNum(elem: exp[i + 1]))
-                        {
-                            // TODO: add error handling here
-                            throw "Syntax Error"
-                        }
-                        let num1 = exp[i - 1].value;
-                        let num2 = exp[i + 1].value;
-                        
-                        do {
-                            exp[i - 1].value = try evaluateBinaryExpression(num1: num1, num2: num2, operation: op);
-                        } catch {
-                            throw error
-                        }
-                        
-                        exp.removeSubrange(i...i+1)
+
+                    if(!isNum(elem: exp[i - 1]) || !isNum(elem: exp[i + 1]))
+                    {
+                        // TODO: add error handling here
+                        throw "Syntax Error"
                     }
-                    
-                    
+                    let num1 = exp[i - 1].value;
+                    let num2 = exp[i + 1].value;
+                    do {
+                        exp[i - 1].value = try evaluateBinaryExpression(num1: num1, num2: num2, operation: op);
+                    } catch {
+                        throw error
+                    }
+                    exp.removeSubrange(i...i+1)
+                    i-=1;
                 }
+
+                i+=1;
             }
-            
+
         }
         
+
+        var i = 0;
+        while(i < exp.count){
+            if (exp[i].value == -1 && exp[i].isOperator) {
+                if (!isNum(elem: exp[i + 1])) {
+                    print("oops")
+                    // TODO: add error handling here
+                    throw "Syntax Error"
+                }
+                exp[i + 1].value *= -1;
+                exp[i] = exp[i + 1];
+                exp.removeSubrange(i+1...i+1);
+            }
+
+            i+=1;
+        }
+
+
         return StackElement(isOperator: false, isBracket: false, value: exp[0].value)
     }
     
@@ -334,15 +351,22 @@ class ExpressionsLib {
         
         var isMinusPlusChain = false;
         
-        for var i in 0...exp.count-1 {
+        var i = -1;
+
+        while(true) {
+
+            i+=1
+            if(i >= exp.count){
+                break;
+            }
             
             var current = exp[exp.index(exp.startIndex, offsetBy: i)]
-            
+
             var isNumber = Double(String(current)) != nil ? !Double(String(current))!.isNaN : false
             
             var didAdd = false;
-            
-            
+
+
             // Checking if the character is a number
             if(isNumber || current == "."){
                 didAdd = true;
@@ -416,8 +440,8 @@ class ExpressionsLib {
                 haveToUseCoef = false;
                 
             }
-            
-            
+
+
             if(stack.count > 0 && isNum(elem: stack[stack.count - 1])){
                 
                 var shouldContinue = false;
@@ -430,7 +454,7 @@ class ExpressionsLib {
                     }
                     let start = exp.index(exp.startIndex, offsetBy: i)
                     let end = exp.index(exp.startIndex, offsetBy: i + op.key.count - 1)
-                    
+
                     if(String(exp[start...end]) == op.key) {
                         
                         didAdd = true;
@@ -438,10 +462,9 @@ class ExpressionsLib {
                         let value = stack[stack.count - 1].value;
                         do {
                             stack[stack.count - 1].value = try evaluatePostUnaryExpression(num: value, operation: op.key);
-                        }catch {
+                        } catch {
                             throw error
                         }
-                        
                         
                         i = i + op.key.count - 1;
                         shouldContinue = true;
@@ -451,9 +474,9 @@ class ExpressionsLib {
                 }
                 if(shouldContinue) {continue}
             }
-            
-            
-            
+
+
+
             if(stack.count > 0 &&
                (stack[stack.count - 1].isBracket || stack[stack.count - 1].isOperator) &&
                (current == "-" || current == "+")){
@@ -461,7 +484,7 @@ class ExpressionsLib {
                 didAdd = true;
                 var nextElem = exp[exp.index(exp.startIndex, offsetBy: i + 1)];
                 if (nextElem == "-" || nextElem == "+") {
-                    
+
                     if(isMinusPlusChain){
                         minusCoef *= (current == "-") ? -1 : 1;
                     }else{
@@ -482,7 +505,7 @@ class ExpressionsLib {
                     }else{
                         minusCoef = (current == "-") ? -1 : 1;
                     }
-                    
+
                     isMinusUnary = true;
                     isMinusForNumber = false;
                     isMinusPlusChain = false;
@@ -492,17 +515,17 @@ class ExpressionsLib {
                     // If the next characted is a bracket
                     // we can assume that the unary operator
                     // is being performed on an expression
-                    
+
                     if(isMinusPlusChain){
                         minusCoef *= (current == "-") ? -1 : 1;
                     }else{
                         minusCoef = (current == "-") ? -1 : 1;
                     }
-                    
+
                     isMinusUnary = false;
                     isMinusForNumber = true;
                     isMinusPlusChain = false;
-                    
+
                     continue;
                 }
             }else{
@@ -510,8 +533,8 @@ class ExpressionsLib {
                 isMinusUnary = false;
                 isMinusForNumber = false;
             }
-            
-            
+
+
             if(current == "("){
                 
                 // Incrementing the number of unclosed brackets
@@ -542,7 +565,7 @@ class ExpressionsLib {
                 repeat {
                     lastChar = stack.popLast()!;
                     if(!lastChar.isBracket){
-                        
+
                         subExpression.insert(lastChar, at: 0)
                     }
                     
@@ -560,14 +583,13 @@ class ExpressionsLib {
                     throw "Syntax Error"
                 }
                 
-                
+
                 // Evaluating all the binary operations
                 do {
                     stack.append(try evaluateSubExpression(expo: subExpression))
                 } catch {
                     throw error
                 }
-                
                 
                 // Evaluating all the non-post unary operations (like sqrt)
                 if(pendingUnary.count != 0 && pendingUnary[pendingUnary.count - 1].bracesNum == numberOfUnclosedBrackets){
@@ -576,13 +598,12 @@ class ExpressionsLib {
                         // TODO: add error handling here
                         throw "Syntax Error"
                     }
-                    
                     do {
                         stack[stack.count - 1] = StackElement(isOperator: false, isBracket: false, value: try evaluateUnaryExpression(num: stack[stack.count - 1].value, operation: pendingUnary[pendingUnary.count - 1]._operator))
+                        pendingUnary.popLast()
                     } catch {
                         throw error
                     }
-                    pendingUnary.popLast()
                 }
                 
             }else {
@@ -594,7 +615,7 @@ class ExpressionsLib {
                         // Checking if the operator has been found in the string
                         let start = exp.index(exp.startIndex, offsetBy: i)
                         let end = exp.index(exp.startIndex, offsetBy: i + op.key.count - 1)
-                        
+
                         if(String(exp[start...end]) == op.key) {
                             didAdd = true;
                             i = i + op.key.count - 1;
@@ -638,18 +659,22 @@ class ExpressionsLib {
                     }
                     
                     
-                    
+                  
                     let start = exp.index(exp.startIndex, offsetBy: i)
                     let end = i + op.key.count < exp.count ? exp.index(exp.startIndex, offsetBy: i + op.key.count - 1) : exp.endIndex
                     if(String(exp[start...end]) == op.key) {
                         didAdd = true;
+
+
                         i = i + op.key.count - 1;
                         
+
+
                         if(op.key == "-"){
                             // Special operator reserved for internal
                             // use only. It signifies that the value has
                             // to be negated
-                            
+
                             stack.append(StackElement(isOperator: true, isBracket: false, value: -1))
                         }else{
                             pendingUnary.append(pendingUnaryObject(_operator: op.key, bracesNum: numberOfUnclosedBrackets))
@@ -663,17 +688,14 @@ class ExpressionsLib {
                     throw "Illegal characters or syntax error"
                 }
             }
-            
-            continue;
-            
+
         }
-        
-        
-        if(numberOfUnclosedBrackets != 0){
+
+
+         if(numberOfUnclosedBrackets != 0){
             // TODO: add error handling here
-            throw "Unbalanced brackets"
+             throw "Unbalanced brackets"
         }
-        
         do {
             let value = try evaluateSubExpression(expo: stack).value;
             return value;
@@ -681,5 +703,4 @@ class ExpressionsLib {
             throw error
         }
     }
-    
 }
